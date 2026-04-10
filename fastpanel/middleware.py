@@ -166,9 +166,20 @@ class FastPanelMiddleware:
                         is_html = b"text/html" in value
                         break
 
+                # Attach the request ID to every response — lets developers
+                # see the ID in browser DevTools for any JSON/API response
+                # and use it to look up panel data at /__fastpanel/.
+                response_headers.append(
+                    (b"x-fastpanel-request-id", request_id.encode())
+                )
+
                 if not is_html:
-                    # Non-HTML: send the start message immediately and stream.
-                    await send(message)
+                    # Non-HTML: send with the updated headers immediately.
+                    await send({
+                        "type": "http.response.start",
+                        "status": response_status,
+                        "headers": response_headers,
+                    })
                 response_started = True
 
             elif message["type"] == "http.response.body":

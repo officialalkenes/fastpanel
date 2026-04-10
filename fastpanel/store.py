@@ -123,6 +123,32 @@ class RequestStore:
         """Support ``request_id in store`` membership test."""
         return request_id in self._data
 
+    def list(self) -> list[dict[str, Any]]:
+        """Return summaries of all stored requests, newest first.
+
+        Each summary contains the fields needed to render the request list
+        in the standalone debugger UI without loading full panel data.
+
+        Returns:
+            List of summary dicts, most recent request first.
+        """
+        summaries = []
+        for request_id, data in reversed(list(self._data.items())):
+            panels = data.get("panels", {})
+            req = panels.get("request", {})
+            resp = panels.get("response", {})
+            perf = panels.get("performance", {})
+            sql = panels.get("sql", {})
+            summaries.append({
+                "request_id": request_id,
+                "method": req.get("method", "?"),
+                "path": req.get("path", "/"),
+                "status_code": resp.get("status_code", 0),
+                "total_ms": round(perf.get("total_ms", 0.0), 1),
+                "sql_count": sql.get("total_queries", 0) if sql else 0,
+            })
+        return summaries
+
     @property
     def max_requests(self) -> int:
         """The configured maximum number of requests."""

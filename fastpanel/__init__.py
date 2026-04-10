@@ -36,7 +36,7 @@ from typing import Any
 
 from fastpanel.config import FastPanelConfig
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __all__ = ["FastPanel", "FastPanelConfig"]
 
 # Lazily export CacheTracker and InMemoryCache — they live in panels.cache but
