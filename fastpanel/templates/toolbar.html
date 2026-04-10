@@ -1,0 +1,32 @@
+<!-- FastPanel Toolbar Shell — injected just before </body> -->
+<!-- data-request-id and data-api-base are set by the middleware -->
+<link rel="stylesheet" href="{{ mount_path }}/static/toolbar.css">
+
+<div id="fastpanel-toolbar"
+     class="fp-collapsed"
+     data-request-id="{{ request_id }}"
+     data-api-base="{{ mount_path }}/api">
+
+  <!-- Tab bar: always visible when toolbar is expanded -->
+  <div id="fp-tabbar">
+
+    <!-- Logo + toggle button + total time badge -->
+    <div id="fp-toggle" title="Toggle FastPanel">
+      <span class="fp-logo">⚡</span>
+      <span>FastPanel</span>
+      <span class="fp-total-time"></span>
+    </div>
+
+    <!-- Panel tabs are injected here by toolbar.js after data fetch -->
+
+    <!-- Close button anchored to the right -->
+    <div id="fp-close" title="Close FastPanel (session)">×</div>
+  </div>
+
+  <!-- Panel content area -->
+  <div id="fp-content">
+    <!-- Populated by toolbar.js -->
+  </div>
+</div>
+
+<script src="{{ mount_path }}/static/toolbar.js"></script>

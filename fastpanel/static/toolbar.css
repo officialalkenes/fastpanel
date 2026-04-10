@@ -1,0 +1,484 @@
+/* FastPanel Toolbar — Dark theme, floating bottom-right */
+/* Scoped under #fastpanel-toolbar to avoid polluting page styles */
+
+:root {
+  --fp-bg: #1a1a2e;
+  --fp-bg-lighter: #16213e;
+  --fp-bg-panel: #0f3460;
+  --fp-accent: #e94560;
+  --fp-accent-hover: #ff6b81;
+  --fp-text: #e0e0e0;
+  --fp-text-muted: #9e9e9e;
+  --fp-border: #2a2a4e;
+  --fp-slow: #ff4757;
+  --fp-warn: #ffa502;
+  --fp-ok: #2ed573;
+  --fp-font: 'SF Mono', 'Fira Code', 'Consolas', 'Menlo', monospace;
+  --fp-font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --fp-z: 2147483647; /* Maximum z-index — always on top */
+  --fp-radius: 6px;
+  --fp-shadow: 0 -4px 24px rgba(0,0,0,0.5);
+  --fp-transition: 0.2s ease;
+}
+
+/* ─── Reset scope ──────────────────────────────────────────────────────────── */
+#fastpanel-toolbar * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  font-family: var(--fp-font-ui);
+  line-height: 1.4;
+}
+
+/* ─── Outer container ──────────────────────────────────────────────────────── */
+#fastpanel-toolbar {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: var(--fp-z);
+  width: 100%;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+  background: var(--fp-bg);
+  color: var(--fp-text);
+  box-shadow: var(--fp-shadow);
+  border-top: 2px solid var(--fp-accent);
+  transition: max-height var(--fp-transition), opacity var(--fp-transition);
+  user-select: none;
+}
+
+#fastpanel-toolbar.fp-collapsed {
+  max-height: 36px;
+  overflow: hidden;
+}
+
+#fastpanel-toolbar.fp-hidden {
+  display: none !important;
+}
+
+/* ─── Tab bar (top strip always visible when expanded) ─────────────────────── */
+#fp-tabbar {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  min-height: 36px;
+  background: var(--fp-bg);
+  border-bottom: 1px solid var(--fp-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+#fp-tabbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── Logo / toggle tab ────────────────────────────────────────────────────── */
+#fp-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  height: 100%;
+  background: var(--fp-accent);
+  color: white;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border-right: 1px solid rgba(255,255,255,0.1);
+  transition: background var(--fp-transition);
+}
+
+#fp-toggle:hover {
+  background: var(--fp-accent-hover);
+}
+
+#fp-toggle .fp-logo {
+  font-size: 14px;
+}
+
+#fp-toggle .fp-total-time {
+  font-family: var(--fp-font);
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+/* ─── Panel tabs ───────────────────────────────────────────────────────────── */
+.fp-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 12px;
+  height: 100%;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--fp-text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  border-right: 1px solid var(--fp-border);
+  transition: background var(--fp-transition), color var(--fp-transition);
+  flex-shrink: 0;
+}
+
+.fp-tab:hover {
+  background: var(--fp-bg-lighter);
+  color: var(--fp-text);
+}
+
+.fp-tab.fp-tab-active {
+  background: var(--fp-bg-lighter);
+  color: white;
+  border-bottom: 2px solid var(--fp-accent);
+}
+
+.fp-tab-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fp-tab-badge {
+  font-family: var(--fp-font);
+  font-size: 10px;
+  background: rgba(255,255,255,0.1);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--fp-text);
+}
+
+/* ─── Close button ─────────────────────────────────────────────────────────── */
+#fp-close {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 100%;
+  font-size: 16px;
+  color: var(--fp-text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color var(--fp-transition);
+}
+
+#fp-close:hover {
+  color: var(--fp-accent);
+}
+
+/* ─── Panel content area ───────────────────────────────────────────────────── */
+#fp-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 16px;
+  background: var(--fp-bg-lighter);
+  scrollbar-width: thin;
+  scrollbar-color: var(--fp-border) transparent;
+}
+
+#fp-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+#fp-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#fp-content::-webkit-scrollbar-thumb {
+  background: var(--fp-border);
+  border-radius: 3px;
+}
+
+/* Loading / error states */
+.fp-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fp-text-muted);
+  font-size: 13px;
+  padding: 20px 0;
+}
+
+.fp-loading::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--fp-border);
+  border-top-color: var(--fp-accent);
+  border-radius: 50%;
+  animation: fp-spin 0.8s linear infinite;
+}
+
+@keyframes fp-spin {
+  to { transform: rotate(360deg); }
+}
+
+.fp-error {
+  color: var(--fp-slow);
+  font-size: 13px;
+  padding: 8px 0;
+}
+
+/* ─── Shared panel styles ──────────────────────────────────────────────────── */
+.fp-panel {
+  display: none;
+}
+
+.fp-panel.fp-panel-active {
+  display: block;
+}
+
+.fp-panel h3 {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fp-text-muted);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--fp-border);
+}
+
+/* ─── Tables (used by multiple panels) ────────────────────────────────────── */
+.fp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.fp-table th {
+  text-align: left;
+  padding: 5px 8px;
+  color: var(--fp-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--fp-border);
+}
+
+.fp-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  vertical-align: top;
+  font-family: var(--fp-font);
+  font-size: 11px;
+  color: var(--fp-text);
+}
+
+.fp-table tr:last-child td {
+  border-bottom: none;
+}
+
+.fp-table tr:hover td {
+  background: rgba(255,255,255,0.03);
+}
+
+/* Key-value tables (request/response/headers panels) */
+.fp-kv td:first-child {
+  color: var(--fp-text-muted);
+  width: 30%;
+  word-break: break-word;
+}
+
+.fp-kv td:last-child {
+  color: var(--fp-text);
+  word-break: break-all;
+}
+
+/* ─── SQL panel specifics ──────────────────────────────────────────────────── */
+.fp-query-block {
+  margin-bottom: 10px;
+  border: 1px solid var(--fp-border);
+  border-radius: var(--fp-radius);
+  overflow: hidden;
+}
+
+.fp-query-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: var(--fp-bg-panel);
+  font-size: 11px;
+  gap: 12px;
+}
+
+.fp-query-duration {
+  font-family: var(--fp-font);
+  font-weight: 700;
+  color: var(--fp-ok);
+}
+
+.fp-query-duration.fp-slow {
+  color: var(--fp-slow);
+}
+
+.fp-query-location {
+  color: var(--fp-text-muted);
+  font-family: var(--fp-font);
+  font-size: 10px;
+  margin-left: auto;
+}
+
+.fp-query-sql {
+  padding: 8px 10px;
+  background: #0a0a1a;
+  font-family: var(--fp-font);
+  font-size: 11px;
+  line-height: 1.6;
+  color: #cdd6f4;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-x: auto;
+}
+
+/* SQL keyword highlighting via JS className injection */
+.fp-sql-keyword { color: #89b4fa; font-weight: 700; }
+.fp-sql-string  { color: #a6e3a1; }
+.fp-sql-number  { color: #fab387; }
+.fp-sql-param   { color: #f9e2af; }
+
+.fp-query-block.fp-slow-query {
+  border-color: var(--fp-slow);
+}
+
+.fp-query-block.fp-slow-query .fp-query-header {
+  background: rgba(255, 71, 87, 0.15);
+}
+
+/* ─── Performance panel specifics ─────────────────────────────────────────── */
+.fp-perf-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.fp-perf-card {
+  background: var(--fp-bg-panel);
+  border-radius: var(--fp-radius);
+  padding: 10px 14px;
+  text-align: center;
+}
+
+.fp-perf-value {
+  font-family: var(--fp-font);
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  display: block;
+}
+
+.fp-perf-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fp-text-muted);
+  margin-top: 3px;
+  display: block;
+}
+
+/* ─── Logging panel specifics ─────────────────────────────────────────────── */
+.fp-log-record {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  font-size: 12px;
+}
+
+.fp-log-record:last-child {
+  border-bottom: none;
+}
+
+.fp-log-level {
+  font-family: var(--fp-font);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  min-width: 52px;
+  text-align: center;
+}
+
+.fp-log-level.WARNING  { background: rgba(255, 165, 2, 0.2); color: var(--fp-warn); }
+.fp-log-level.ERROR    { background: rgba(255, 71, 87, 0.2); color: var(--fp-slow); }
+.fp-log-level.CRITICAL { background: rgba(255, 71, 87, 0.35); color: var(--fp-slow); }
+
+.fp-log-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.fp-log-message {
+  color: var(--fp-text);
+  word-break: break-word;
+}
+
+.fp-log-location {
+  font-family: var(--fp-font);
+  font-size: 10px;
+  color: var(--fp-text-muted);
+  margin-top: 2px;
+}
+
+.fp-log-exc {
+  font-family: var(--fp-font);
+  font-size: 10px;
+  color: var(--fp-slow);
+  margin-top: 4px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ─── Cache panel specifics ────────────────────────────────────────────────── */
+.fp-cache-stats {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.fp-cache-stat {
+  background: var(--fp-bg-panel);
+  border-radius: var(--fp-radius);
+  padding: 6px 12px;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fp-cache-stat-value {
+  font-family: var(--fp-font);
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+}
+
+.fp-cache-stat-label {
+  font-size: 10px;
+  color: var(--fp-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fp-op-get  { color: var(--fp-ok); }
+.fp-op-set  { color: #74b9ff; }
+.fp-op-del  { color: var(--fp-slow); }
+.fp-op-miss { color: var(--fp-warn); }
+
+/* ─── Empty state ──────────────────────────────────────────────────────────── */
+.fp-empty {
+  color: var(--fp-text-muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 24px 0;
+}
