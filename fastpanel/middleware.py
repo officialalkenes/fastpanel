@@ -140,7 +140,46 @@ class FastPanelMiddleware:
         from starlette.requests import Request
 
         request_id = str(uuid.uuid4())
-        request = Request(scope, receive)
+
+        # ── Buffer the full request body ──────────────────────────────────────
+        # ASGI's `receive` is a one-shot stream: once body events are consumed
+        # the callable blocks forever waiting for the next transport event (a
+        # disconnect that never arrives while the client is still waiting for a
+        # response). Without this buffering, panels that call `request.body()`
+        # would consume the stream and the downstream route handler would
+        # deadlock trying to read a body that is already gone.
+        #
+        # We eagerly drain all `http.request` events here, cache the assembled
+        # body, then hand every caller — middleware panels AND the app — a
+        # `replay_receive` that always returns the cached bytes. Each caller
+        # gets a fresh read of the full body regardless of call order.
+        _req_chunks: list[bytes] = []
+        while True:
+            _msg = await receive()
+            if _msg["type"] == "http.disconnect":
+                # Client disconnected before sending the body — nothing to do.
+                await self._app(scope, receive, send)
+                return
+            if _msg["type"] == "http.request":
+                _chunk = _msg.get("body", b"")
+                if _chunk:
+                    _req_chunks.append(_chunk)
+                if not _msg.get("more_body", False):
+                    break
+
+        _cached_body: bytes = b"".join(_req_chunks)
+
+        async def replay_receive() -> Any:
+            """Return the cached request body.
+
+            Stateless and re-entrant: calling it multiple times (e.g. from
+            nested middleware or multiple Request instances sharing the same
+            scope) always yields the full body, so downstream handlers never
+            see an empty or blocked read.
+            """
+            return {"type": "http.request", "body": _cached_body, "more_body": False}
+
+        request = Request(scope, replay_receive)
 
         # Activate all panels for this request.
         await self._toolbar.process_request(request)
@@ -221,8 +260,9 @@ class FastPanelMiddleware:
                         }
                     )
 
-        # Pass the request downstream.
-        await self._app(scope, receive, intercept_send)
+        # Pass the request downstream using replay_receive so that route
+        # handlers can read the body even though middleware already consumed it.
+        await self._app(scope, replay_receive, intercept_send)
 
         # Finalise panels after the response is built.
         from starlette.responses import Response

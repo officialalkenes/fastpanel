@@ -54,9 +54,9 @@ class RequestPanel(AbstractPanel):
         """Snapshot the incoming request.
 
         We read the body only if the content type is ``application/json``
-        to avoid buffering large binary uploads into memory. The body is
-        consumed once here; Starlette caches it so downstream handlers
-        still see the full body.
+        to avoid buffering large binary uploads into memory. The middleware
+        buffers the body upfront and provides a ``replay_receive`` callable
+        so this read does not interfere with the downstream route handler.
 
         Args:
             request: The incoming Starlette ``Request`` object.
